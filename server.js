@@ -19,7 +19,12 @@ app.get("/api/tasks", (req, res) => {
 });
 
 app.post("/api/tasks", (req, res) => {
-  const task = req.body;
+  const task = {
+    title: req.body.title,
+    status: req.body.status || "pending",
+    priority: req.body.priority || "medium"
+  };
+
   tasks.push(task);
   res.json(task);
 });
