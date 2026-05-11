@@ -149,13 +149,12 @@ app.post("/api/gmail-drafts", async (req, res) => {
 
     const { to, subject, body } = req.body;
 
-    const email = [
-      'To: ${to || ""}',
-      'Subject: ${subject || "No subject"}',
-      "Content-Type: text/plain; charset=utf-8",
-      "",
-      body || ""
-    ].join("\n");
+  const email = `To: ${to}
+Subject: ${subject || "No subject"}
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+${body || ""}`;
 
     const encodedEmail = Buffer.from(email)
       .toString("base64")
