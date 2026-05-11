@@ -138,6 +138,54 @@ app.get("/debug-google", (req, res) => {
   });
 });
 
+app.post("/api/gmail-drafts", async (req, res) => {
+  if (!gmailTokens) {
+    return res.status(401).json({ message: "Gmail is not connected. Visit /auth/google first." });
+  }
+
+  try {
+    oauth2Client.setCredentials(gmailTokens);
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+    const { to, subject, body } = req.body;
+
+    const email = [
+      To: ${to || ""},
+      Subject: ${subject || "No subject"},
+      "Content-Type: text/plain; charset=utf-8",
+      "",
+      body || ""
+    ].join("\n");
+
+    const encodedEmail = Buffer.from(email)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const draft = await gmail.users.drafts.create({
+      userId: "me",
+      requestBody: {
+        message: {
+          raw: encodedEmail
+        }
+      }
+    });
+
+    res.json({
+      message: "Gmail draft created successfully",
+      draftId: draft.data.id
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to create Gmail draft",
+      error: error.message
+    });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
