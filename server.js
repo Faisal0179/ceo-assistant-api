@@ -9,6 +9,7 @@ let tasks = [
   { title: "Project", status: "pending" },
   { title: "Power BI", status: "pending" }
 ];
+let emailDrafts = [];
 
 app.get("/", (req, res) => {
   res.send("CEO Assistant API is running");
@@ -53,6 +54,34 @@ app.delete("/api/tasks/:title", (req, res) => {
   const deleted = tasks.splice(index, 1);
 
   res.json({ message: "Task deleted", deleted });
+});
+app.get("/api/email-drafts", (req, res) => {
+  res.json(emailDrafts);
+});
+
+app.post("/api/email-drafts", (req, res) => {
+  const draft = {
+    id: emailDrafts.length + 1,
+    to: req.body.to || "",
+    subject: req.body.subject || "No subject",
+    body: req.body.body || "",
+    status: "draft"
+  };
+
+  emailDrafts.push(draft);
+  res.json(draft);
+});
+
+app.delete("/api/email-drafts/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const index = emailDrafts.findIndex(d => d.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ message: "Draft not found" });
+  }
+
+  const deleted = emailDrafts.splice(index, 1);
+  res.json({ message: "Draft deleted", deleted });
 });
 
 const PORT = process.env.PORT || 3000;
