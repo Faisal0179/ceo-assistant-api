@@ -150,8 +150,8 @@ app.post("/api/gmail-drafts", async (req, res) => {
     const { to, subject, body } = req.body;
 
     const email = [
-      To: ${to || ""},
-      Subject: ${subject || "No subject"},
+      'To: ${to || ""}',
+      'Subject: ${subject || "No subject"}',
       "Content-Type: text/plain; charset=utf-8",
       "",
       body || ""
