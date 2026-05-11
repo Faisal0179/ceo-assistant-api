@@ -128,20 +128,14 @@ app.get("/auth/google", (req, res) => {
   res.redirect(authUrl);
 });
 
-app.get("/oauth2callback", async (req, res) => {
-  const code = req.query.code;
-
-  try {
-    const { tokens } = await oauth2Client.getToken(code);
-
-    oauth2Client.setCredentials(tokens);
-    gmailTokens = tokens;
-
-    res.send("Gmail connected successfully.");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("OAuth failed.");
-  }
+app.get("/debug-google", (req, res) => {
+  res.json({
+    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    clientIdEndsWith: process.env.GOOGLE_CLIENT_ID
+      ? process.env.GOOGLE_CLIENT_ID.slice(-30)
+      : null
+  });
 });
 
 app.listen(PORT, () => {
