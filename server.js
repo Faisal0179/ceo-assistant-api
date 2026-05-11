@@ -1,9 +1,18 @@
 const express = require("express");
 const cors = require("cors");
+const { google } = require("googleapis");
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  "https://ceo-assistant-api.onrender.com/oauth2callback"
+);
+
+let gmailTokens = null;
 
 let tasks = [
   { title: "Project", status: "pending" },
@@ -85,6 +94,30 @@ app.delete("/api/email-drafts/:id", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.get("/auth/google", (req, res) => {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: ["https://www.googleapis.com/auth/gmail.compose"]
+  });
+
+  res.redirect(authUrl);
+});
+
+app.get("/oauth2callback", async (req, res) => {
+  const code = req.query.code;
+
+  try {
+    const { tokens } = await oauth2Client.getToken(code);
+
+    oauth2Client.setCredentials(tokens);
+    gmailTokens = tokens;
+
+    res.send("Gmail connected successfully.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("OAuth failed.");
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
