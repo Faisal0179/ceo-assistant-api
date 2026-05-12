@@ -57,8 +57,11 @@ const task = tasks.find(
 app.delete("/api/tasks/:title", (req, res) => {
   const title = req.params.title;
 
-  const index = tasks.findIndex(t => t.title.toLowerCase() === title.toLowerCase());
+const decodedTitle = decodeURIComponent(title);
 
+const taskIndex = tasks.findIndex(
+  t => t.title.toLowerCase().includes(decodedTitle.toLowerCase())
+);
   if (index === -1) {
     return res.status(404).json({ message: "Task not found" });
   }
