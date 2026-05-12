@@ -41,8 +41,11 @@ app.post("/api/tasks", (req, res) => {
 app.put("/api/tasks/:title", (req, res) => {
   const title = req.params.title;
 
-  const task = tasks.find(t => t.title.toLowerCase() === title.toLowerCase());
+const decodedTitle = decodeURIComponent(title);
 
+const task = tasks.find(
+  t => t.title.toLowerCase().includes(decodedTitle.toLowerCase())
+);
   if (!task) {
     return res.status(404).json({ message: "Task not found" });
   }
