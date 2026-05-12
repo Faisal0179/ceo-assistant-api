@@ -55,20 +55,22 @@ const task = tasks.find(
   res.json(task);
 });
 app.delete("/api/tasks/:title", (req, res) => {
-  const title = req.params.title;
+  const title = decodeURIComponent(req.params.title || "").toLowerCase();
 
-const decodedTitle = decodeURIComponent(title);
+  const taskIndex = tasks.findIndex(t =>
+    (t.title || "").toLowerCase().includes(title)
+  );
 
-const taskIndex = tasks.findIndex(
-  t => t.title.toLowerCase().includes(decodedTitle.toLowerCase())
-);
-  if (index === -1) {
+  if (taskIndex === -1) {
     return res.status(404).json({ message: "Task not found" });
   }
 
-  const deleted = tasks.splice(index, 1);
+  const deletedTask = tasks.splice(taskIndex, 1)[0];
 
-  res.json({ message: "Task deleted", deleted });
+  res.json({
+    message: "Task deleted successfully",
+    deletedTask
+  });
 });
 app.get("/api/email-drafts", (req, res) => {
   res.json(emailDrafts);
