@@ -4,9 +4,9 @@ const { google } = require("googleapis");
 
 
 const app = express();
+app.use(express.json());
 app.use(express.static("public"));
 app.use(cors());
-app.use(express.json());
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
