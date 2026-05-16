@@ -210,6 +210,7 @@ app.get("/", (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
+    <link rel="stylesheet" href="/style.css">
       <title>Adam Dashboard</title>
       <style>
         body { font-family: Arial; background:#f4f6f9; padding:20px; }
