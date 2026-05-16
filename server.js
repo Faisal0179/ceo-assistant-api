@@ -210,21 +210,8 @@ app.get("/", (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-    <link rel="stylesheet" href="/style.css">
       <title>Adam Dashboard</title>
-      <style>
-        body { font-family: Arial; background:#f4f6f9; padding:20px; }
-        .cards { display:flex; gap:15px; margin:20px 0; }
-        .card, .panel { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px #ccc; }
-        .card { width:180px; }
-        input, select, button { padding:10px; margin:5px; }
-        button, .btn { background:#111827; color:white; padding:8px 12px; text-decoration:none; border-radius:5px; border:none; }
-        .delete { background:#b91c1c; }
-        .complete { background:#166534; }
-        table { width:100%; background:white; border-collapse:collapse; margin-top:20px; }
-        th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
-        th { background:#111827; color:white; }
-      </style>
+          <link rel="stylesheet" href="/style.css">
     </head>
     <body>
       <h1>Adam Executive Dashboard</h1>
