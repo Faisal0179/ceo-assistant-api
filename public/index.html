@@ -1,71 +1,128 @@
-</button>
-          </td>
-        `;
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Adam Executive Dashboard</title>
+  <style>
+    body { font-family: Arial; background:#f4f6f9; padding:20px; }
+    .cards { display:flex; gap:15px; margin-bottom:20px; }
+    .card, .panel { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px #ccc; }
+    .card { width:180px; }
+    input, select, button { padding:10px; margin:5px; }
+    button { background:#111827; color:white; border:none; border-radius:5px; cursor:pointer; }
+    .delete { background:#b91c1c; }
+    .complete { background:#166534; }
+    table { width:100%; background:white; border-collapse:collapse; }
+    th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
+    th { background:#111827; color:white; }
+    .high { color:red; font-weight:bold; }
+    .medium { color:orange; font-weight:bold; }
+    .low { color:green; font-weight:bold; }
+  </style>
+</head>
+<body>
 
-        table.appendChild(row);
-      });
-    }
+<h1>Adam Executive Dashboard</h1>
+<p>AI Executive Assistant for Media Production Management</p>
 
-    function getPriorityClass(priority) {
-      const value = (priority || '').toLowerCase();
+<div class="cards">
+  <div class="card"><p>Total Tasks</p><h2 id="totalTasks">0</h2></div>
+  <div class="card"><p>High Priority</p><h2 id="highTasks">0</h2></div>
+  <div class="card"><p>Completed</p><h2 id="completedTasks">0</h2></div>
+</div>
 
-      if (value.includes('high')) return 'high';
-      if (value.includes('medium')) return 'medium';
-      if (value.includes('low')) return 'low';
+<div class="panel">
+  <h3>Add New Task</h3>
+  <input id="taskTitle" placeholder="Task title">
+  <select id="taskPriority">
+    <option>High Priority</option>
+    <option>Medium Priority</option>
+    <option>Low Priority</option>
+  </select>
+  <select id="taskStatus">
+    <option>pending</option>
+    <option>completed</option>
+  </select>
+  <button onclick="addTask()">Add Task</button>
+  <button onclick="loadTasks()">Refresh</button>
+</div>
 
-      return '';
-    }
+<br>
 
-    async function addTask() {
-      const title = document.getElementById('taskTitle').value;
-      const priority = document.getElementById('taskPriority').value;
-      const status = document.getElementById('taskStatus').value;
+<table>
+  <thead>
+    <tr>
+      <th>Task</th>
+      <th>Status</th>
+      <th>Priority</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="taskTable"></tbody>
+</table>
 
-      if (!title.trim()) {
-        alert('Please enter a task title');
-        return;
-      }
+<script>
+async function loadTasks() {
+  const response = await fetch('/api/tasks');
+  const tasks = await response.json();
 
-      await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title,
-          priority,
-          status
-        })
-      });
+  document.getElementById('totalTasks').innerText = tasks.length;
 
-      document.getElementById('taskTitle').value = '';
-      loadTasks();
-    }
+  const high = tasks.filter(t => String(t.priority || '').toLowerCase().includes('high'));
+  document.getElementById('highTasks').innerText = high.length;
 
-    async function completeTask(encodedTitle) {
-      await fetch(`/api/tasks/${encodedTitle}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          status: 'completed'
-        })
-      });
+  const completed = tasks.filter(t => String(t.status || '').toLowerCase().includes('completed'));
+  document.getElementById('completedTasks').innerText = completed.length;
 
-      loadTasks();
-    }
+  const table = document.getElementById('taskTable');
+  table.innerHTML = '';
 
-    async function deleteTask(encodedTitle) {
-      await fetch(`/api/tasks/${encodedTitle}`, {
-        method: 'DELETE'
-      });
+  tasks.forEach(task => {
+    const row = document.createElement('tr');
 
-      loadTasks();
-    }
+    const priorityClass = String(task.priority || '').toLowerCase().includes('high') ? 'high'
+      : String(task.priority || '').toLowerCase().includes('medium') ? 'medium'
+      : String(task.priority || '').toLowerCase().includes('low') ? 'low'
+      : '';
 
-    loadTasks();
-  </script>
+    row.innerHTML =
+      '<td>' + (task.title || '-') + '</td>' +
+      '<td>' + (task.status || 'pending') + '</td>' +
+      '<td class="' + priorityClass + '">' + (task.priority || '-') + '</td>' +
+      '<td>' +
+        '<button class="complete" onclick="completeTask(\'' + encodeURIComponent(task.title) + '\')">Complete</button> ' +
+        '<button class="delete" onclick="deleteTask(\'' + encodeURIComponent(task.title) + '\')">Delete</button>' +
+      '</td>';
 
-</body>
-</html>
+    table.appendChild(row);
+  });
+}
+
+async function addTask() {
+  const title = document.getElementById('taskTitle').value;
+  const priority = document.getElementById('taskPriority').value;
+  const status = document.getElementById('taskStatus').value;
+
+  if (!title.trim()) {
+    alert('Please enter a task title');
+    return;
+  }
+
+  await fetch('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, priority, status })
+  });
+
+  document.getElementById('taskTitle').value = '';
+  loadTasks();
+}
+
+async function completeTask(title) {
+  await fetch('/api/tasks/' + title, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'completed' })
+  });
+
+  loadTasks();
+}
