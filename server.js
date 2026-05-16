@@ -7,6 +7,7 @@ const app = express();
 app.use(express.static("public"));
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -188,6 +189,120 @@ ${body || ""}`;
       error: error.message
     });
   }
+});
+app.get("/", (req, res) => {
+  const total = tasks.length;
+  const high = tasks.filter(t => (t.priority || "").toLowerCase().includes("high")).length;
+  const completed = tasks.filter(t => (t.status || "").toLowerCase() === "completed").length;
+
+  const rows = tasks.map(task => `
+    <tr>
+      <td>${task.title}</td>
+      <td>${task.status || "pending"}</td>
+      <td>${task.priority || "-"}</td>
+      <td>
+        <a class="btn complete" href="/dashboard/complete/${encodeURIComponent(task.title)}">Complete</a>
+        <a class="btn delete" href="/dashboard/delete/${encodeURIComponent(task.title)}">Delete</a>
+      </td>
+    </tr>
+  `).join("");
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Adam Dashboard</title>
+      <style>
+        body { font-family: Arial; background:#f4f6f9; padding:20px; }
+        .cards { display:flex; gap:15px; margin:20px 0; }
+        .card, .panel { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px #ccc; }
+        .card { width:180px; }
+        input, select, button { padding:10px; margin:5px; }
+        button, .btn { background:#111827; color:white; padding:8px 12px; text-decoration:none; border-radius:5px; border:none; }
+        .delete { background:#b91c1c; }
+        .complete { background:#166534; }
+        table { width:100%; background:white; border-collapse:collapse; margin-top:20px; }
+        th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
+        th { background:#111827; color:white; }
+      </style>
+    </head>
+    <body>
+      <h1>Adam Executive Dashboard</h1>
+      <p>AI Executive Assistant for Media Production Management</p>
+
+      <div class="cards">
+        <div class="card"><p>Total Tasks</p><h2>${total}</h2></div>
+        <div class="card"><p>High Priority</p><h2>${high}</h2></div>
+        <div class="card"><p>Completed</p><h2>${completed}</h2></div>
+      </div>
+
+      <div class="panel">
+        <h3>Add New Task</h3>
+        <form method="POST" action="/dashboard/add">
+          <input name="title" placeholder="Task title" required />
+          <select name="priority">
+            <option>High Priority</option>
+            <option>Medium Priority</option>
+            <option>Low Priority</option>
+          </select>
+          <select name="status">
+            <option>pending</option>
+            <option>completed</option>
+          </select>
+          <button type="submit">Add Task</button>
+        </form>
+      </div>
+
+      <table>
+        <tr>
+          <th>Task</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Actions</th>
+        </tr>
+        ${rows}
+      </table>
+    </body>
+    </html>
+  `);
+});
+
+app.post("/dashboard/add", (req, res) => {
+  tasks.push({
+    title: req.body.title,
+    status: req.body.status || "pending",
+    priority: req.body.priority || "Medium Priority"
+  });
+
+  res.redirect("/");
+});
+
+app.get("/dashboard/complete/:title", (req, res) => {
+  const title = decodeURIComponent(req.params.title || "").toLowerCase();
+
+  const task = tasks.find(t =>
+    (t.title || "").toLowerCase().includes(title)
+  );
+
+  if (task) {
+    task.status = "completed";
+  }
+
+  res.redirect("/");
+});
+
+app.get("/dashboard/delete/:title", (req, res) => {
+  const title = decodeURIComponent(req.params.title || "").toLowerCase();
+
+  const index = tasks.findIndex(t =>
+    (t.title || "").toLowerCase().includes(title)
+  );
+
+  if (index !== -1) {
+    tasks.splice(index, 1);
+  }
+
+  res.redirect("/");
 });
 
 
