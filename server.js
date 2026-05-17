@@ -240,7 +240,18 @@ app.get("/", (req, res) => {
           <button type="submit">Add Task</button>
         </form>
       </div>
+<div class="panel">
+  <h3>Create Gmail Draft</h3>
 
+  <form method="POST" action="/dashboard/gmail-draft">
+    <input name="to" placeholder="Recipient email" required />
+    <input name="subject" placeholder="Email subject" required />
+    <br><br>
+    <textarea name="body" placeholder="Email body" required style="width:100%; height:120px; padding:12px; border-radius:10px; border:1px solid #ccc;"></textarea>
+    <br><br>
+    <button type="submit">Save as Gmail Draft</button>
+  </form>
+</div>
       <table>
         <tr>
           <th>Task</th>
@@ -293,6 +304,82 @@ app.get("/dashboard/delete/:title", (req, res) => {
   res.redirect("/");
 });
 
+app.post("/dashboard/gmail-draft", async (req, res) => {
+  if (!gmailTokens) {
+    return res.send(`
+      <h2>Gmail is not connected</h2>
+      <p>Please connect Gmail first.</p>
+      <a href="/auth/google">Connect Gmail</a>
+      <br><br>
+      <a href="/">Back to Dashboard</a>
+    `);
+  }
+
+  try {
+    oauth2Client.setCredentials(gmailTokens);
+
+    const gmail = google.gmail({
+      version: "v1",
+      auth: oauth2Client
+    });
+
+    const { to, subject, body } = req.body;
+
+    const email = `To: ${to}
+Subject: ${subject || "No subject"}
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+${body || ""}`;
+
+    const encodedEmail = Buffer.from(email)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const draft = await gmail.users.drafts.create({
+      userId: "me",
+      requestBody: {
+        message: {
+          raw: encodedEmail
+        }
+      }
+    });
+
+    emailDrafts.unshift({
+      id: draft.data.id,
+      to,
+      subject,
+      body,
+      createdAt: new Date().toISOString(),
+      source: "Dashboard"
+    });
+
+    res.send(`
+      <h2>Gmail draft created successfully ✅</h2>
+      <p>The draft was saved in Gmail Drafts.</p>
+      <a href="/">Back to Dashboard</a>
+    `);
+
+  } catch (error) {
+    res.send(`
+      <h2>Failed to create Gmail draft ❌</h2>
+      <p>${error.message}</p>
+      <a href="/">Back to Dashboard</a>
+    `);
+  }
+});
+
+app.get("/api/latest-draft", (req, res) => {
+  if (!emailDrafts.length) {
+    return res.json({
+      message: "No drafts found"
+    });
+  }
+
+  res.json(emailDrafts[0]);
+});
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
