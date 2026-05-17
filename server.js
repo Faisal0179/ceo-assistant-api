@@ -22,7 +22,7 @@ let tasks = [
 ];
 let emailDrafts = [];
 let latestAnalysis = null;
-
+let latestMakeResult = null;
 app.get("/api/tasks", (req, res) => {
   res.json(tasks);
 });
@@ -195,6 +195,7 @@ app.get("/", (req, res) => {
   const high = tasks.filter(t => (t.priority || "").toLowerCase().includes("high")).length;
   const completed = tasks.filter(t => (t.status || "").toLowerCase() === "completed").length;
   const analysis = latestAnalysis;
+  const makeResult = latestMakeResult;
   const rows = tasks.map(task => `
     <tr>
       <td>${task.title}</td>
@@ -254,6 +255,35 @@ app.get("/", (req, res) => {
     </div>
   </div>
 </div>
+
+<div class="panel">
+  <h3>Make AI Routing Results</h3>
+
+  <div class="analysis-grid">
+
+    <div class="analysis-box">
+      <strong>Department</strong>
+      ${makeResult?.department || "No department detected"}
+    </div>
+
+    <div class="analysis-box status">
+      <strong>Risk Level</strong>
+      ${makeResult?.risk_level || "-"}
+    </div>
+
+    <div class="analysis-box">
+      <strong>Summary</strong>
+      ${makeResult?.summary || "-"}
+    </div>
+
+    <div class="analysis-box recommendation">
+      <strong>Action Taken</strong>
+      ${makeResult?.action_taken || "-"}
+    </div>
+
+  </div>
+</div>
+
 
       <div class="panel">
         <h3>Add New Task</h3>
@@ -436,6 +466,24 @@ app.get("/api/analysis", (req, res) => {
 
   res.json(latestAnalysis);
 });
+
+app.post("/api/make-result", (req, res) => {
+
+  latestMakeResult = {
+    department: req.body.department || "Unknown",
+    risk_level: req.body.risk_level || "Medium",
+    summary: req.body.summary || "",
+    action_taken: req.body.action_taken || "",
+    createdAt: new Date().toISOString()
+  };
+
+  res.json({
+    message: "Make result saved",
+    result: latestMakeResult
+  });
+
+});
+
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
