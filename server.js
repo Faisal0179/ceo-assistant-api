@@ -194,7 +194,7 @@ app.get("/", (req, res) => {
   const total = tasks.length;
   const high = tasks.filter(t => (t.priority || "").toLowerCase().includes("high")).length;
   const completed = tasks.filter(t => (t.status || "").toLowerCase() === "completed").length;
-
+  const analysis = latestAnalysis;
   const rows = tasks.map(task => `
     <tr>
       <td>${task.title}</td>
@@ -223,6 +223,15 @@ app.get("/", (req, res) => {
         <div class="card"><p>High Priority</p><h2>${high}</h2></div>
         <div class="card"><p>Completed</p><h2>${completed}</h2></div>
       </div>
+      
+<div class="panel">
+  <h3>Executive Analysis Dashboard</h3>
+  <p><strong>Title:</strong> ${analysis?.title || "No analysis saved yet"}</p>
+  <p><strong>Status:</strong> ${analysis?.status || "-"}</p>
+  <p><strong>Summary:</strong> ${analysis?.summary || "-"}</p>
+  <p><strong>Risks:</strong> ${analysis?.risks || "-"}</p>
+  <p><strong>Recommendations:</strong> ${analysis?.recommendations || "-"}</p>
+</div>
 
       <div class="panel">
         <h3>Add New Task</h3>
