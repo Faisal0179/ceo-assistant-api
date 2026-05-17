@@ -21,7 +21,7 @@ let tasks = [
   { title: "Power BI", status: "pending" }
 ];
 let emailDrafts = [];
-
+let latestAnalysis = null;
 
 app.get("/api/tasks", (req, res) => {
   res.json(tasks);
@@ -379,6 +379,31 @@ app.get("/api/latest-draft", (req, res) => {
   }
 
   res.json(emailDrafts[0]);
+});
+app.post("/api/analysis", (req, res) => {
+  latestAnalysis = {
+    title: req.body.title || "Executive Analysis",
+    summary: req.body.summary || "",
+    risks: req.body.risks || "",
+    recommendations: req.body.recommendations || "",
+    status: req.body.status || "Needs Review",
+    createdAt: new Date().toISOString()
+  };
+
+  res.json({
+    message: "Analysis saved successfully",
+    analysis: latestAnalysis
+  });
+});
+
+app.get("/api/analysis", (req, res) => {
+  if (!latestAnalysis) {
+    return res.json({
+      message: "No analysis saved yet"
+    });
+  }
+
+  res.json(latestAnalysis);
 });
 
 app.listen(PORT, () => {
