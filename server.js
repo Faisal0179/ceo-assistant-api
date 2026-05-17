@@ -226,11 +226,33 @@ app.get("/", (req, res) => {
       
 <div class="panel">
   <h3>Executive Analysis Dashboard</h3>
-  <p><strong>Title:</strong> ${analysis?.title || "No analysis saved yet"}</p>
-  <p><strong>Status:</strong> ${analysis?.status || "-"}</p>
-  <p><strong>Summary:</strong> ${analysis?.summary || "-"}</p>
-  <p><strong>Risks:</strong> ${analysis?.risks || "-"}</p>
-  <p><strong>Recommendations:</strong> ${analysis?.recommendations || "-"}</p>
+
+  <div class="analysis-grid">
+    <div class="analysis-box">
+      <strong>Title</strong>
+      ${analysis?.title || "No analysis saved yet"}
+    </div>
+
+    <div class="analysis-box status">
+      <strong>Status</strong>
+      ${analysis?.status || "-"}
+    </div>
+
+    <div class="analysis-box">
+      <strong>Summary</strong>
+      ${analysis?.summary || "-"}
+    </div>
+
+    <div class="analysis-box risk">
+      <strong>Risks</strong>
+      ${analysis?.risks || "-"}
+    </div>
+
+    <div class="analysis-box recommendation">
+      <strong>Recommendations</strong>
+      ${analysis?.recommendations || "-"}
+    </div>
+  </div>
 </div>
 
       <div class="panel">
