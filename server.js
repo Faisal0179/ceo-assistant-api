@@ -277,7 +277,7 @@ app.get("/", (req, res) => {
     </div>
 
     <div class="analysis-box recommendation">
-      <strong>Action Taken</strong>
+      <strong>Priority </strong>
       ${makeResult?.action_taken || "-"}
     </div>
 
