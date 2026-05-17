@@ -470,10 +470,10 @@ app.get("/api/analysis", (req, res) => {
 app.post("/api/make-result", (req, res) => {
 
   latestMakeResult = {
-    department: req.body.department || "Unknown",
-    risk_level: req.body.risk_level || "Medium",
-    summary: req.body.summary || "",
-    action_taken: req.body.action_taken || "",
+  department: req.body.department || "Unknown",
+  risk_level: req.body.risk || "-",
+  summary: req.body.summary || "",
+  action_taken: req.body.priority || "-",
     createdAt: new Date().toISOString()
   };
 
