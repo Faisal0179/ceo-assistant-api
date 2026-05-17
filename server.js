@@ -473,7 +473,7 @@ app.post("/api/make-result", (req, res) => {
   department: req.body.department || req.body.Department || "Unknown",
   risk_level: req.body.risk || req.body.Risk || "-",
   summary: req.body.summary || req.body.Summary || "",
-  action_taken: req.body.priority || req.body.Priority || "-"
+  action_taken: req.body.priority || req.body.Priority || "-",
     createdAt: new Date().toISOString()
   };
 
