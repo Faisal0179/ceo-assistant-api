@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { google } = require("googleapis");
+const axios = require("axios");
 
 
 const app = express();
@@ -23,6 +24,7 @@ let tasks = [
 let emailDrafts = [];
 let latestAnalysis = null;
 let latestMakeResult = null;
+const MAKE_WEBHOOK = "https://hook.eu1.make.com/febgadbtic1ii4k8iljgere979d2o5dk";
 app.get("/api/tasks", (req, res) => {
   res.json(tasks);
 });
@@ -467,8 +469,38 @@ app.get("/api/analysis", (req, res) => {
   res.json(latestAnalysis);
 });
 
-app.post("/api/make-result", (req, res) => {
 
+
+app.post("/api/send-to-make", async (req, res) => {
+  try {
+    const issue = req.body.issue || req.body.message;
+
+    if (!issue) {
+      return res.status(400).json({
+        message: "No issue provided"
+      });
+    }
+
+    await axios.post(MAKE_WEBHOOK, {
+      issue: issue
+    });
+
+    res.json({
+      message: "Issue sent to Make successfully",
+      sentIssue: issue
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to send issue to Make",
+      error: error.message
+    });
+  }
+});
+
+
+app.post("/api/make-result", (req, res) => {
   latestMakeResult = {
   department: req.body.department || req.body.Department || "Unknown",
   risk_level: req.body.risk || req.body.Risk || "-",
